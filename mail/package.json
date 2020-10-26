@@ -1,0 +1,13 @@
+{
+  "name": "mail",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "test": "jest --coverage"
+  },
+  "dependencies": {
+    "@spica-devkit/bucket": "^0.5.3",
+    "pug": "^3.0.0"
+  }
+}

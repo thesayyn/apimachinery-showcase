@@ -1,0 +1,16 @@
+{
+    "name": "useful-stuff",
+    "private": true,
+    "scripts": {
+        "deploy:mail": "yarn --cwd mail test && spica apply -f mail.yaml"
+    },
+    "workspaces": [
+        "mail"
+    ],
+    "devDependencies": {
+        "babel-preset-env": "^1.7.0",
+        "babel-core": "^6.26.3",
+        "babel-jest": "^26.6.0",
+        "jest": "^26.6.0"
+    }
+}

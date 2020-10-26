@@ -1,0 +1,122 @@
+apiVersion: bucket/v1
+kind: Schema
+metadata:
+  name: mails
+spec:
+  title: Mails
+  description: Mails that had been sent by the system.
+  required:
+    - template
+    - to
+  properties:
+    to:
+      type: string
+    template:
+      type: string
+      default: default
+    substitutions:
+      type: array
+      items:
+        type: object
+        required:
+          - key
+          - value
+        properties:
+          key:
+            type: string
+          value:
+            type: string
+    delivered_at:
+      type: date
+    created_at:
+      type: date
+      default: :created_at
+    updated_at:
+      type: date
+      default: :updated_at
+---
+apiVersion: bucket/v1
+kind: Schema
+metadata:
+  name: templates
+spec:
+  title: Mail templates
+  description: Mail templates to use when sending mails.
+  properties:
+    name:
+      type: string
+    template:
+      type: textarea
+      description: Any valid https://pugjs.org template is allowed.
+    created_at:
+      type: date
+      default: :created_at
+    updated_at:
+      type: date
+      default: :updated_at
+---
+apiVersion: passport/v1
+kind: ApiKey
+metadata:
+  name: access-to-mails-and-templates-bucket
+spec:
+  name: Access to Mails and Templates bucket.
+  policies:
+    - BucketFullAccess
+---
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: process-outgoing-emails-on-start
+spec:
+  name: processAllUndeliveredMails
+  type: system
+  systemOptions:
+    event: READY
+---
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: process-outgoing-email-when-added
+spec:
+  name: sendWhenAdded
+  type: bucket
+  bucketOptions:
+    bucket: 
+      resourceFieldRef:
+        bucketName: mails
+    phase: AFTER
+    type: INSERT
+---
+apiVersion: function/v1
+kind: Function
+metadata:
+  name: process
+spec:
+  title: Outgoing mails
+  description: A function that processes outgoing mails
+  code: ./mail/src/sendmail.js
+  triggers:
+    - process-outgoing-emails-on-start
+    - process-outgoing-email-when-added
+  runtime:
+    name: Node
+    language: Javascript
+  environment:
+    - name: TEMPLATE_BUCKET
+      valueFrom:
+        resourceFieldRef:
+          bucketName: templates
+    - name: MAIL_BUCKET
+      valueFrom:
+        resourceFieldRef:
+          bucketName: mails
+    - name: API_KEY
+      valueFrom:
+        resourceFieldRef:
+          apiKeyName: access-to-mails-and-templates-bucket
+  dependency:
+    - name: pug
+      version: latest
+    - name: "@spica-devkit/bucket"
+      version: latest
