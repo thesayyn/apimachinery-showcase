@@ -31,6 +31,8 @@ spec:
     created_at:
       type: date
       default: :created_at
+      options:
+        position: left
     updated_at:
       type: date
       default: :updated_at
@@ -65,30 +67,6 @@ spec:
     - BucketFullAccess
 ---
 apiVersion: function/v1
-kind: Trigger
-metadata:
-  name: process-outgoing-emails-on-start
-spec:
-  name: processAllUndeliveredMails
-  type: system
-  systemOptions:
-    event: READY
----
-apiVersion: function/v1
-kind: Trigger
-metadata:
-  name: process-outgoing-email-when-added
-spec:
-  name: sendWhenAdded
-  type: bucket
-  bucketOptions:
-    bucket: 
-      resourceFieldRef:
-        bucketName: mails
-    phase: AFTER
-    type: INSERT
----
-apiVersion: function/v1
 kind: Function
 metadata:
   name: process
@@ -96,9 +74,6 @@ spec:
   title: Outgoing mails
   description: A function that processes outgoing mails
   code: ./mail/src/sendmail.js
-  triggers:
-    - process-outgoing-emails-on-start
-    - process-outgoing-email-when-added
   runtime:
     name: Node
     language: Javascript
@@ -120,3 +95,29 @@ spec:
       version: latest
     - name: "@spica-devkit/bucket"
       version: latest
+---
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: process-outgoing-emails-on-start
+spec:
+  name: processAllUndeliveredMails
+  func: process
+  type: system
+  systemOptions:
+    event: READY
+---
+apiVersion: function/v1
+kind: Trigger
+metadata:
+  name: process-outgoing-email-when-added
+spec:
+  name: sendWhenAdded
+  func: process
+  type: bucket
+  bucketOptions:
+    bucket: 
+      resourceFieldRef:
+        bucketName: mails
+    phase: AFTER
+    type: INSERT
