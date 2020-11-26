@@ -8,6 +8,9 @@ spec:
   required:
     - template
     - to
+  acl:
+    write: "true==true"
+    read: "true==true"
   properties:
     to:
       type: string
@@ -44,6 +47,9 @@ metadata:
 spec:
   title: Mail templates
   description: Mail templates to use when sending mails.
+  acl:
+    write: "true==true"
+    read: "true==true"
   properties:
     name:
       type: string
